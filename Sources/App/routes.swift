@@ -1,11 +1,13 @@
+//
+//  routes.swift
+//
+//
+//  Created by Yesset Murat on 4/19/22.
+//
+
 import Vapor
 
 func routes(_ app: Application) throws {
-    app.get { req in
-        return "It works!"
-    }
-
-    app.get("hello") { req -> String in
-        return "Hello, world!"
-    }
+    try RecordsRouter().boot(routes: app.routes)
+    try CategoriesRouter().boot(routes: app.routes)
 }

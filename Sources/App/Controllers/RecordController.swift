@@ -10,23 +10,34 @@ import Fluent
 
 struct RecordsContorller {
 
-    struct CreateRequestBody: Content {
+    private let service: RecordsServiceProtocol
 
-        let amount: Decimal
-        let category: UUID
+    init(service: RecordsServiceProtocol) {
+        self.service = service
     }
 
-    func all(req: Request) async throws -> Page<Record> {
-        try await Record.query(on: req.db).with(\.$category).paginate(for: req)
+    func create(_ request: Request) async throws -> HTTPStatus {
+        try await service.create(request: request)
     }
 
-    func create(req: Request) async throws -> HTTPStatus {
-        let requestBody = try req.content.decode(CreateRequestBody.self)
-        guard let category = try await Category.find(requestBody.category, on: req.db) else {
-            throw Abort(.badRequest, reason: "Unable to find category")
-        }
-        let record = Record(category: try category.requireID(), amount: requestBody.amount)
-        try await record.save(on: req.db)
-        return .created
+    func record(_ request: Request) async throws -> RecordResponse {
+        try await service.record(request: request)
+    }
+
+    func all(_ request: Request) async throws -> Page<RecordResponse> {
+        try await service.all(request: request)
+    }
+}
+
+extension RecordsContorller: RouteCollection {
+
+    func boot(routes: RoutesBuilder) throws {
+        let group = routes
+            .grouped("api", "records")
+            .grouped(AuthorizationToken.authenticator(), AuthorizationToken.guardMiddleware())
+
+        group.get(use: all)
+        group.get(":id", use: record)
+        group.post(use: create)
     }
 }

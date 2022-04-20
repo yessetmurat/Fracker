@@ -7,27 +7,37 @@
 
 import Vapor
 import Fluent
-import Foundation
 
 final class Category: Model {
 
     static let schema = "categories"
 
+    struct FieldKeys {
+
+        static var emoji: FieldKey { "emoji" }
+        static var name: FieldKey { "name" }
+        static var user: FieldKey { "user" }
+    }
+
     @ID(key: .id)
     var id: UUID?
 
-    @Field(key: "emoji")
+    @Field(key: FieldKeys.emoji)
     var emoji: String
 
-    @Field(key: "name")
+    @Field(key: FieldKeys.name)
     var name: String
+
+    @Parent(key: FieldKeys.user)
+    var user: User
 
     init() {}
 
-    init(id: UUID? = nil, emoji: String, name: String) {
+    init(id: UUID? = nil, emoji: String, name: String, user: User.IDValue) {
         self.id = id
         self.emoji = emoji
         self.name = name
+        self.$user.id = user
     }
 }
 

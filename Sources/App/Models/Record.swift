@@ -7,31 +7,42 @@
 
 import Vapor
 import Fluent
-import Foundation
 
 final class Record: Model {
 
     static let schema = "records"
 
+    struct FieldKeys {
+
+        static var createdAt: FieldKey { "created_at" }
+        static var amount: FieldKey { "amount" }
+        static var category: FieldKey { "category" }
+        static var user: FieldKey { "user" }
+    }
+
     @ID(key: .id)
     var id: UUID?
 
-    @Timestamp(key: "created_at", on: .create)
+    @Timestamp(key: FieldKeys.createdAt, on: .create)
     var createdAt: Date?
 
-    @Parent(key: "category")
+    @Field(key: FieldKeys.amount)
+    var amount: Decimal
+
+    @Parent(key: FieldKeys.category)
     var category: Category
 
-    @Field(key: "amount")
-    var amount: Decimal
+    @Parent(key: FieldKeys.user)
+    var user: User
 
     init() {}
 
-    init(id: UUID? = nil, createdAt: Date? = nil, category: Category.IDValue, amount: Decimal) {
+    init(id: UUID? = nil, createdAt: Date? = nil, amount: Decimal, category: Category.IDValue, user: User.IDValue) {
         self.id = id
         self.createdAt = createdAt
-        self.$category.id = category
         self.amount = amount
+        self.$category.id = category
+        self.$user.id = user
     }
 }
 

@@ -9,27 +9,34 @@ import Vapor
 
 struct CategoriesController {
 
-    struct CreateRequestBody: Content {
+    private let service: CategoriesServiceProtocol
 
-        let emoji: String
-        let name: String
+    init(service: CategoriesServiceProtocol) {
+        self.service = service
     }
 
-    func all(req: Request) async throws -> [Category] {
-        return try await Category.query(on: req.db).all()
+    func all(_ request: Request) async throws -> [CategoryResponse] {
+        try await service.all(request: request)
     }
 
-    func category(req: Request) async throws -> Category {
-        guard let category = try await Category.find(req.parameters.get("id"), on: req.db) else {
-            throw Abort(.notFound)
-        }
-        return category
+    func category(_ request: Request) async throws -> CategoryResponse {
+        try await service.category(request: request)
     }
 
-    func create(req: Request) async throws -> HTTPStatus {
-        let requestBody = try req.content.decode(CreateRequestBody.self)
-        let category = Category(emoji: requestBody.emoji, name: requestBody.name)
-        try await category.save(on: req.db)
-        return .created
+    func create(_ request: Request) async throws -> HTTPStatus {
+        try await service.create(request: request)
+    }
+}
+
+extension CategoriesController: RouteCollection {
+
+    func boot(routes: RoutesBuilder) throws {
+        let group = routes
+            .grouped("api", "categories")
+            .grouped(AuthorizationToken.authenticator(), AuthorizationToken.guardMiddleware())
+
+        group.get(use: all)
+        group.get(":id", use: category)
+        group.post(use: create)
     }
 }

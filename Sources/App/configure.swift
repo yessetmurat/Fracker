@@ -46,6 +46,7 @@ public func configure(_ app: Application) throws {
 
 private func configureServer(_ app: Application) throws {
     app.http.server.configuration.supportVersions = [.two]
+    app.http.server.configuration.port = 443
 
     let certificateName: String
     let privateKeyName: String

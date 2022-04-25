@@ -15,10 +15,9 @@ extension Category {
             try await database
                 .schema(schema)
                 .id()
-                .field(FieldKeys.emoji, .string, .required)
                 .field(FieldKeys.name, .string, .required)
                 .field(FieldKeys.user, .uuid, .references(User.schema, .id), .required)
-                .create()
+                .update()
         }
 
         func revert(on database: Database) async throws {

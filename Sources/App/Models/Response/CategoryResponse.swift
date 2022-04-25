@@ -10,6 +10,5 @@ import Vapor
 struct CategoryResponse: Content {
 
     let id: UUID
-    let emoji: String
     let name: String
 }

@@ -26,13 +26,14 @@ x-shared_environment: &shared_environment
   
 services:
   app:
-    image: fracker:latest
+    image: yessetmurat/fracker:latest
     environment:
       <<: *shared_environment
     depends_on:
       - db
+    restart: on-failure
     ports:
-      - '80:8080'
+      - '443:443'
   db:
     image: postgres:latest
     volumes:

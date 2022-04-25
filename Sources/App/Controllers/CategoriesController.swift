@@ -12,14 +12,13 @@ struct CategoriesController {
 
     struct CreateRequestBody: Content {
 
-        let emoji: String
         let name: String
     }
 
     func create(request: Request) async throws -> HTTPStatus {
         let user = try await request.user
         let category = try request.content.decode(CreateRequestBody.self)
-        let persistedCategory = try Category(emoji: category.emoji, name: category.name, user: user.requireID())
+        let persistedCategory = try Category(name: category.name, user: user.requireID())
 
         try await persistedCategory.save(on: request.db)
         return .created
@@ -30,12 +29,22 @@ struct CategoriesController {
             throw Abort(.badRequest, reason: "Category with specified id wasn't found")
         }
 
-        return try CategoryResponse(id: category.requireID(), emoji: category.emoji, name: category.name)
+        return try CategoryResponse(id: category.requireID(), name: category.name)
+    }
+
+    func delete(request: Request) async throws -> HTTPStatus {
+        guard let category = try await Category.find(request.parameters.get("id"), on: request.db) else {
+            throw Abort(.badRequest, reason: "Category with specified id wasn't found")
+        }
+
+        try await category.delete(on: request.db)
+
+        return .ok
     }
 
     func all(request: Request) async throws -> [CategoryResponse] {
         return try await request.user.$categories.get(on: request.db).map { category in
-            try CategoryResponse(id: category.requireID(), emoji: category.emoji, name: category.name)
+            try CategoryResponse(id: category.requireID(), name: category.name)
         }
     }
 }
@@ -49,6 +58,7 @@ extension CategoriesController: RouteCollection {
 
         group.get(use: all)
         group.get(":id", use: category)
+        group.delete(":id", use: delete)
         group.post(use: create)
     }
 }

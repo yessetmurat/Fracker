@@ -2,3 +2,5 @@
 .swiftpm/
 .env
 .env.*
+Supporting/localhost-key.*
+Supporting/localhost.*

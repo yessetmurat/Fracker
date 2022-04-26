@@ -16,8 +16,9 @@ extension Category {
                 .schema(schema)
                 .id()
                 .field(FieldKeys.name, .string, .required)
+                .field(FieldKeys.deletedAt, .datetime)
                 .field(FieldKeys.user, .uuid, .references(User.schema, .id), .required)
-                .update()
+                .create()
         }
 
         func revert(on database: Database) async throws {

@@ -18,8 +18,10 @@ struct UserController {
             throw Abort(.badRequest, reason: "A user with email \(user.email) already exists")
         }
 
-        let password = try await request.password.async.hash(user.password)
-        let persistedUser = User(email: user.email, password: password)
+        guard let password = user.password else { throw Abort(.badRequest, reason: "Password is required") }
+
+        let passwordHash = try await request.password.async.hash(password)
+        let persistedUser = User(email: user.email, password: passwordHash)
 
         try await persistedUser.create(on: request.db)
 
@@ -29,11 +31,14 @@ struct UserController {
     func signIn(request: Request) async throws -> AuthResponse {
         let user = try request.content.decode(User.self)
 
+        guard let password = user.password else { throw Abort(.badRequest, reason: "Password is required") }
+
         guard let persistedUser = try await User.query(on: request.db).filter(\.$email == user.email).first() else {
             throw Abort(.badRequest, reason: "A user with email \(user.email) not found")
         }
 
-        guard try await request.password.async.verify(user.password, created: persistedUser.password) else {
+        guard let passwordHash = persistedUser.password,
+              try await request.password.async.verify(password, created: passwordHash) else {
             throw Abort(.badRequest, reason: "Incorrect user password")
         }
 
@@ -47,9 +52,6 @@ struct UserController {
 extension UserController: RouteCollection {
 
     func boot(routes: RoutesBuilder) throws {
-        let group = routes.grouped("api", "users")
 
-        group.post("sign-up", use: signUp)
-        group.post("sign-in", use: signIn)
     }
 }

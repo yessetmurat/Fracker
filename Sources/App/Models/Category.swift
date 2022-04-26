@@ -16,6 +16,7 @@ final class Category: Model {
 
         static var name: FieldKey { "name" }
         static var user: FieldKey { "user" }
+        static var deletedAt: FieldKey { "deleted_at" }
     }
 
     @ID(key: .id)
@@ -23,6 +24,9 @@ final class Category: Model {
 
     @Field(key: FieldKeys.name)
     var name: String
+
+    @Timestamp(key: FieldKeys.deletedAt, on: .delete)
+    var deletedAt: Date?
 
     @Parent(key: FieldKeys.user)
     var user: User

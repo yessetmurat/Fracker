@@ -14,6 +14,8 @@ import NIOSSL
 extension Application {
 
     var supportingDirectory: String { self.directory.workingDirectory + "Supporting/" }
+
+    var applicationIdentifier: String? { Environment.get("APPLICATION_IDENTIFIER") }
 }
 
 extension String {
@@ -28,25 +30,20 @@ extension JWKIdentifier {
 }
 
 public func configure(_ app: Application) throws {
-    // MARK: - Server configuration
     try configureServer(app)
 
-    // MARK: - Database configuration
     configureDatabase(app)
 
-    // MARK: - Migrations
     try addMigrations(app)
 
-    // MARK: - JWT and password configuration
     try configureUserSecurity(app)
 
-    // MARK: - Routes
     try routes(app)
 }
 
 private func configureServer(_ app: Application) throws {
     app.http.server.configuration.supportVersions = [.two]
-    app.http.server.configuration.port = 443
+//    app.http.server.configuration.port = 443
 
     let certificateName: String
     let privateKeyName: String
@@ -97,6 +94,8 @@ private func configureUserSecurity(_ app: Application) throws {
 
     app.jwt.signers.use(privateSigner, kid: .private)
     app.jwt.signers.use(publicSigner, kid: .public, isDefault: true)
+
+    app.jwt.apple.applicationIdentifier = app.applicationIdentifier
 
     app.passwords.use(.bcrypt)
 }

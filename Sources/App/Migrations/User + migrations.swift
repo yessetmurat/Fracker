@@ -16,7 +16,10 @@ extension User {
                 .schema(schema)
                 .id()
                 .field(FieldKeys.email, .string, .required)
-                .field(FieldKeys.password, .string, .required)
+                .field(FieldKeys.appleUserIdentifier, .string)
+                .field(FieldKeys.firstName, .string)
+                .field(FieldKeys.lastName, .string)
+                .field(FieldKeys.password, .string)
                 .unique(on: FieldKeys.email)
                 .create()
         }

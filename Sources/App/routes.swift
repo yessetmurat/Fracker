@@ -9,12 +9,11 @@ import Vapor
 
 func routes(_ app: Application) throws {
 
-    // MARK: - User
     try UserController().boot(routes: app.routes)
 
-    // MARK: - Categories
+    try AppleSignInController().boot(routes: app.routes)
+
     try CategoriesController().boot(routes: app.routes)
 
-    // MARK: - Records
     try RecordsContorller().boot(routes: app.routes)
 }

@@ -28,12 +28,15 @@ x-shared_environment: &shared_environment
 services:
   app:
     image: fracker-dev:latest
+    build:
+      context: .
+      dockerfile: Dockerfile-dev
     environment:
       <<: *shared_environment
     depends_on:
       - db
     ports:
-      - '443:443'
+      - '8080:8080'
     volumes:
       - .:/app
     working_dir: /app

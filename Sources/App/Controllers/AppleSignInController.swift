@@ -19,15 +19,8 @@ struct AppleSignInController {
     }
 
     func auth(request: Request) async throws -> AuthResponse {
-        guard let applicationIdentifier = request.application.applicationIdentifier else {
-            throw Abort(.internalServerError)
-        }
-
         let requestBody = try request.content.decode(RequestBody.self)
-        let appleIdentityToken = try await request.jwt.apple.verify(
-            requestBody.appleIdentityToken,
-            applicationIdentifier: applicationIdentifier
-        )
+        let appleIdentityToken = try await request.jwt.apple.verify(requestBody.appleIdentityToken)
         return try await appleAuthorization(
             request: request,
             appleIdentityToken: appleIdentityToken,

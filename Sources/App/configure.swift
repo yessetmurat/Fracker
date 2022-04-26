@@ -16,6 +16,11 @@ extension Application {
     var supportingDirectory: String { self.directory.workingDirectory + "Supporting/" }
 
     var applicationIdentifier: String? { Environment.get("APPLICATION_IDENTIFIER") }
+
+    var applicationPort: Int? {
+        guard let portString = Environment.get("APPLICATION_PORT") else { return nil }
+        return Int(portString)
+    }
 }
 
 extension String {
@@ -43,7 +48,6 @@ public func configure(_ app: Application) throws {
 
 private func configureServer(_ app: Application) throws {
     app.http.server.configuration.supportVersions = [.two]
-//    app.http.server.configuration.port = 443
 
     let certificateName: String
     let privateKeyName: String
@@ -65,6 +69,8 @@ private func configureServer(_ app: Application) throws {
         certificateChain: NIOSSLCertificate.fromPEMFile(certificatePath).map { .certificate($0) },
         privateKey: .file(privateKeyPath)
     )
+
+    app.http.server.configuration.port = app.applicationPort ?? 8080
     app.http.server.configuration.tlsConfiguration?.certificateVerification = .none
 }
 

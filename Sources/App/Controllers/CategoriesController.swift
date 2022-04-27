@@ -10,17 +10,27 @@ import Fluent
 
 struct CategoriesController {
 
-    struct CreateRequestBody: Content {
+    struct CreateRequestBody: Decodable {
 
+        let id: UUID?
         let name: String
     }
 
     func create(request: Request) async throws -> HTTPStatus {
         let user = try await request.user
         let category = try request.content.decode(CreateRequestBody.self)
-        let persistedCategory = try Category(name: category.name, user: user.requireID())
+        let persistedCategory = try Category(id: category.id, name: category.name, user: user.requireID())
 
         try await persistedCategory.save(on: request.db)
+        return .created
+    }
+
+    func batchCreate(request: Request) async throws -> HTTPStatus {
+        let user = try await request.user
+        let categories = try request.content.decode(Array<CreateRequestBody>.self)
+        let persistedCategories = try categories.map { try Category(id: $0.id, name: $0.name, user: user.requireID()) }
+
+        try await persistedCategories.create(on: request.db)
         return .created
     }
 
@@ -38,7 +48,6 @@ struct CategoriesController {
         }
 
         try await category.delete(on: request.db)
-
         return .ok
     }
 
@@ -60,5 +69,6 @@ extension CategoriesController: RouteCollection {
         group.get(":id", use: category)
         group.delete(":id", use: delete)
         group.post(use: create)
+        group.post("batch", use: batchCreate)
     }
 }

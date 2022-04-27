@@ -13,6 +13,8 @@ func routes(_ app: Application) throws {
 
     try AppleSignInController().boot(routes: app.routes)
 
+    try GoogleSignInController().boot(routes: app.routes)
+
     try CategoriesController().boot(routes: app.routes)
 
     try RecordsContorller().boot(routes: app.routes)

@@ -11,16 +11,9 @@ import JWT
 
 struct AppleSignInController {
 
-    struct RequestBody: Decodable {
-
-        let appleIdentityToken: String
-        let firstName: String?
-        let lastName: String?
-    }
-
     func auth(request: Request) async throws -> AuthResponse {
-        let requestBody = try request.content.decode(RequestBody.self)
-        let appleIdentityToken = try await request.jwt.apple.verify(requestBody.appleIdentityToken)
+        let requestBody = try request.content.decode(SignInRequestBody.self)
+        let appleIdentityToken = try await request.jwt.apple.verify(requestBody.idToken)
         return try await appleAuthorization(
             request: request,
             appleIdentityToken: appleIdentityToken,
@@ -39,12 +32,14 @@ struct AppleSignInController {
             throw Abort(.badRequest, reason: "Unable to get email from Apple")
         }
 
-        if let user = try await User.query(on: request.db).filter(\.$email == email).first() {
+        let userIdentifier = appleIdentityToken.subject.value
+
+        if let user = try await User.query(on: request.db).filter(\.$appleUserIdentifier == userIdentifier).first() {
             return try authResponse(request: request, for: user)
         } else {
             let user = User(
                 email: email,
-                appleUserIdentifier: appleIdentityToken.subject.value,
+                appleUserIdentifier: userIdentifier,
                 firstName: firstName,
                 lastName: lastName
             )

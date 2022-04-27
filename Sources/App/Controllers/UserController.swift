@@ -11,7 +11,6 @@ import Fluent
 struct UserController {
 
     func signUp(request: Request) async throws -> HTTPStatus {
-        try User.validate(content: request)
         let user = try request.content.decode(User.self)
 
         guard try await User.query(on: request.db).filter(\.$email == user.email).first() == nil else {

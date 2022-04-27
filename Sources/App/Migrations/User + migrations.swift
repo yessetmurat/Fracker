@@ -17,6 +17,7 @@ extension User {
                 .id()
                 .field(FieldKeys.email, .string, .required)
                 .field(FieldKeys.appleUserIdentifier, .string)
+                .field(FieldKeys.googleUserIdentifier, .string)
                 .field(FieldKeys.firstName, .string)
                 .field(FieldKeys.lastName, .string)
                 .field(FieldKeys.password, .string)

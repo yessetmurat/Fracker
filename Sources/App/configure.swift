@@ -15,7 +15,9 @@ extension Application {
 
     var supportingDirectory: String { self.directory.workingDirectory + "Supporting/" }
 
-    var applicationIdentifier: String? { Environment.get("APPLICATION_IDENTIFIER") }
+    var appleApplicationIdentifier: String? { Environment.get("APPLE_APPLICATION_IDENTIFIER") }
+
+    var googleClientId: String? { Environment.get("GOOGLE_CLIENT_ID") }
 
     var applicationPort: Int? {
         guard let portString = Environment.get("APPLICATION_PORT") else { return nil }
@@ -71,7 +73,10 @@ private func configureServer(_ app: Application) throws {
     )
 
     app.http.server.configuration.port = app.applicationPort ?? 8080
-    app.http.server.configuration.tlsConfiguration?.certificateVerification = .none
+
+    if app.environment == .development {
+        app.http.server.configuration.tlsConfiguration?.certificateVerification = .none
+    }
 }
 
 private func configureDatabase(_ app: Application) {
@@ -101,7 +106,8 @@ private func configureUserSecurity(_ app: Application) throws {
     app.jwt.signers.use(privateSigner, kid: .private)
     app.jwt.signers.use(publicSigner, kid: .public, isDefault: true)
 
-    app.jwt.apple.applicationIdentifier = app.applicationIdentifier
+    app.jwt.apple.applicationIdentifier = app.appleApplicationIdentifier
+    app.jwt.google.applicationIdentifier = app.googleClientId
 
     app.passwords.use(.bcrypt)
 }

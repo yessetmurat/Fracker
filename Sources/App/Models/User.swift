@@ -16,6 +16,7 @@ final class User: Model {
 
         static var email: FieldKey { "email" }
         static var appleUserIdentifier: FieldKey { "apple_user_identifier" }
+        static var googleUserIdentifier: FieldKey { "google_user_identifier" }
         static var password: FieldKey { "password" }
         static var firstName: FieldKey { "first_name" }
         static var lastName: FieldKey { "last_name" }
@@ -29,6 +30,9 @@ final class User: Model {
 
     @Field(key: FieldKeys.appleUserIdentifier)
     var appleUserIdentifier: String?
+
+    @Field(key: FieldKeys.googleUserIdentifier)
+    var googleUserIdentifier: String?
 
     @Field(key: FieldKeys.password)
     var password: String?
@@ -51,6 +55,7 @@ final class User: Model {
         id: UUID? = nil,
         email: String,
         appleUserIdentifier: String? = nil,
+        googleUserIdentifier: String? = nil,
         password: String? = nil,
         firstName: String? = nil,
         lastName: String? = nil
@@ -58,6 +63,7 @@ final class User: Model {
         self.id = id
         self.email = email
         self.appleUserIdentifier = appleUserIdentifier
+        self.googleUserIdentifier = googleUserIdentifier
         self.password = password
         self.firstName = firstName
         self.lastName = lastName
@@ -67,10 +73,3 @@ final class User: Model {
 extension User: Content {}
 
 extension User: Authenticatable {}
-
-extension User: Validatable {
-
-    static func validations(_ validations: inout Validations) {
-
-    }
-}

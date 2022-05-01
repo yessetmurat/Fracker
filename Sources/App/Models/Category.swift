@@ -14,6 +14,7 @@ final class Category: Model {
 
     struct FieldKeys {
 
+        static var emoji: FieldKey { "emoji" }
         static var name: FieldKey { "name" }
         static var user: FieldKey { "user" }
         static var deletedAt: FieldKey { "deleted_at" }
@@ -21,6 +22,9 @@ final class Category: Model {
 
     @ID(key: .id)
     var id: UUID?
+
+    @Field(key: FieldKeys.emoji)
+    var emoji: String
 
     @Field(key: FieldKeys.name)
     var name: String
@@ -33,8 +37,9 @@ final class Category: Model {
 
     init() {}
 
-    init(id: UUID? = nil, name: String, user: User.IDValue) {
+    init(id: UUID? = nil, emoji: String, name: String, user: User.IDValue) {
         self.id = id
+        self.emoji = emoji
         self.name = name
         self.$user.id = user
     }

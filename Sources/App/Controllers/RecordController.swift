@@ -10,10 +10,10 @@ import Fluent
 
 struct RecordsContorller {
 
-    struct CreateRequestBody: Content {
+    struct CreateRequestBody: Decodable {
 
         let id: UUID?
-        let amount: Decimal
+        let amount: Double
         let category: UUID
     }
 
@@ -79,6 +79,7 @@ struct RecordsContorller {
 
         let category = try CategoryResponse(
             id: record.category.requireID(),
+            emoji: record.category.emoji,
             name: record.category.name
         )
 
@@ -95,6 +96,7 @@ struct RecordsContorller {
         return try records.map { record in
             let category = try CategoryResponse(
                 id: record.category.requireID(),
+                emoji: record.category.emoji,
                 name: record.category.name
             )
             return try RecordResponse(

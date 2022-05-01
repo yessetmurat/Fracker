@@ -13,13 +13,19 @@ struct CategoriesController {
     struct CreateRequestBody: Decodable {
 
         let id: UUID?
+        let emoji: String
         let name: String
     }
 
     func create(request: Request) async throws -> HTTPStatus {
         let user = try await request.user
         let category = try request.content.decode(CreateRequestBody.self)
-        let persistedCategory = try Category(id: category.id, name: category.name, user: user.requireID())
+        let persistedCategory = try Category(
+            id: category.id,
+            emoji: category.emoji,
+            name: category.name,
+            user: user.requireID()
+        )
 
         try await persistedCategory.save(on: request.db)
         return .created
@@ -27,8 +33,11 @@ struct CategoriesController {
 
     func batchCreate(request: Request) async throws -> HTTPStatus {
         let user = try await request.user
+
         let categories = try request.content.decode(Array<CreateRequestBody>.self)
-        let persistedCategories = try categories.map { try Category(id: $0.id, name: $0.name, user: user.requireID()) }
+        let persistedCategories = try categories.map {
+            try Category(id: $0.id, emoji: $0.emoji, name: $0.name, user: user.requireID())
+        }
 
         try await persistedCategories.create(on: request.db)
         return .created
@@ -39,7 +48,7 @@ struct CategoriesController {
             throw Abort(.badRequest, reason: "Category with specified id wasn't found")
         }
 
-        return try CategoryResponse(id: category.requireID(), name: category.name)
+        return try CategoryResponse(id: category.requireID(), emoji: category.emoji, name: category.name)
     }
 
     func delete(request: Request) async throws -> HTTPStatus {
@@ -53,7 +62,7 @@ struct CategoriesController {
 
     func all(request: Request) async throws -> [CategoryResponse] {
         return try await request.user.$categories.get(on: request.db).map { category in
-            try CategoryResponse(id: category.requireID(), name: category.name)
+            try CategoryResponse(id: category.requireID(), emoji: category.emoji, name: category.name)
         }
     }
 }

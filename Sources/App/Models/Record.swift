@@ -27,7 +27,7 @@ final class Record: Model {
     var createdAt: Date?
 
     @Field(key: FieldKeys.amount)
-    var amount: Decimal
+    var amount: Double
 
     @Parent(key: FieldKeys.category)
     var category: Category
@@ -37,7 +37,7 @@ final class Record: Model {
 
     init() {}
 
-    init(id: UUID? = nil, createdAt: Date? = nil, amount: Decimal, category: Category.IDValue, user: User.IDValue) {
+    init(id: UUID? = nil, createdAt: Date? = nil, amount: Double, category: Category.IDValue, user: User.IDValue) {
         self.id = id
         self.createdAt = createdAt
         self.amount = amount

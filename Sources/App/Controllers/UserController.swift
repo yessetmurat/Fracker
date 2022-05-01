@@ -51,6 +51,9 @@ struct UserController {
 extension UserController: RouteCollection {
 
     func boot(routes: RoutesBuilder) throws {
+        let group = routes.grouped("api", "users")
 
+        group.post("sign-up", use: signUp)
+        group.post("sign-in", use: signIn)
     }
 }

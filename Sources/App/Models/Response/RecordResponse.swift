@@ -11,6 +11,6 @@ struct RecordResponse: Content {
 
     let id: UUID
     let createdAt: Date?
-    let amount: Decimal
+    let amount: Double
     let category: CategoryResponse
 }

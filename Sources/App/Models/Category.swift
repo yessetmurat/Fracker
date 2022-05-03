@@ -37,10 +37,11 @@ final class Category: Model {
 
     init() {}
 
-    init(id: UUID? = nil, emoji: String, name: String, user: User.IDValue) {
+    init(id: UUID? = nil, emoji: String, name: String, deletedAt: Date? = nil, user: User.IDValue) {
         self.id = id
         self.emoji = emoji
         self.name = name
+        self.deletedAt = deletedAt
         self.$user.id = user
     }
 }

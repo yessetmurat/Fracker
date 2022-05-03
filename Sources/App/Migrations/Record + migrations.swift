@@ -19,7 +19,7 @@ extension Record {
                 .field(FieldKeys.amount, .double, .required)
                 .field(FieldKeys.category, .uuid, .references(Category.schema, .id), .required)
                 .field(FieldKeys.user, .uuid, .references(User.schema, .id), .required)
-                .update()
+                .create()
         }
 
         func revert(on database: Database) async throws {

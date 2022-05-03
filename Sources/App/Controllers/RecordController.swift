@@ -13,7 +13,7 @@ struct RecordsContorller {
     struct CreateRequestBody: Decodable {
 
         let id: UUID?
-        let amount: Double
+        let amount: Decimal
         let category: UUID
     }
 

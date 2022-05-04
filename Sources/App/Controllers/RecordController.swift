@@ -39,31 +39,30 @@ struct RecordsContorller {
 
     func batchCreate(request: Request) async throws -> HTTPStatus {
         let user = try await request.user
-        let records = try request.content.decode(Array<CreateRequestBody>.self)
+        let requestData = try request.content.decode([CreateRequestBody].self)
+        var records: [Record] = []
 
-        var persistedRecords: [Record] = []
+        for object in requestData where try await Record.find(object.id, on: request.db) == nil {
+            let category = try await request.user.$categories.query(on: request.db)
+                .filter(\.$id == object.category)
+                .first()
 
-        for record in records {
-            guard let category = try await
-                    request.user.$categories.query(on: request.db).filter(\.$id == record.category).first() else {
-                continue
-            }
-
-            do {
-                try persistedRecords.append(
-                    Record(
-                        id: record.id,
-                        amount: record.amount,
+            if let category = category {
+                do {
+                    let record = try Record(
+                        id: object.id,
+                        amount: object.amount,
                         category: category.requireID(),
                         user: user.requireID()
                     )
-                )
-            } catch {
-                continue
+                    records.append(record)
+                } catch {
+                    continue
+                }
             }
         }
 
-        try await persistedRecords.create(on: request.db)
+        try await records.create(on: request.db)
         return .created
     }
 

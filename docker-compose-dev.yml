@@ -16,7 +16,7 @@ x-shared_environment: &shared_environment
   
 services:
   db:
-    image: postgres:latest
+    image: postgres:14.2-alpine
     volumes:
       - db_data:/var/lib/postgresql/data
     environment:

@@ -33,13 +33,24 @@ struct CategoriesController {
 
     func batchCreate(request: Request) async throws -> HTTPStatus {
         let user = try await request.user
+        let requestData = try request.content.decode([CreateRequestBody].self)
+        var categories: [Category] = []
 
-        let categories = try request.content.decode(Array<CreateRequestBody>.self)
-        let persistedCategories = try categories.map {
-            try Category(id: $0.id, emoji: $0.emoji, name: $0.name, user: user.requireID())
+        for object in requestData where try await Category.find(object.id, on: request.db) == nil {
+            do {
+                let category = try Category(
+                    id: object.id,
+                    emoji: object.emoji,
+                    name: object.name,
+                    user: user.requireID()
+                )
+                categories.append(category)
+            } catch {
+                continue
+            }
         }
 
-        try await persistedCategories.create(on: request.db)
+        try await categories.create(on: request.db)
         return .created
     }
 

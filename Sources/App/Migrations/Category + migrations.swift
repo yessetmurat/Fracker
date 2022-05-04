@@ -19,8 +19,6 @@ extension Category {
                 .field(FieldKeys.name, .string, .required)
                 .field(FieldKeys.deletedAt, .datetime)
                 .field(FieldKeys.user, .uuid, .references(User.schema, .id), .required)
-                .unique(on: FieldKeys.emoji)
-                .unique(on: FieldKeys.name)
                 .create()
         }
 

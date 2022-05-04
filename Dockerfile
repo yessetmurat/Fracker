@@ -3,12 +3,6 @@
 # ================================
 FROM swift:5.6.1-focal as build
 
-# Install OS updates and, if needed, sqlite3
-RUN export DEBIAN_FRONTEND=noninteractive DEBCONF_NONINTERACTIVE_SEEN=true \
-    && apt-get -q update \
-    && apt-get -q dist-upgrade -y \
-    && rm -rf /var/lib/apt/lists/*
-
 # Set up a build area
 WORKDIR /build
 
@@ -43,12 +37,7 @@ RUN [ -d /build/Resources ] && { mv /build/Resources ./Resources && chmod -R a-w
 # ================================
 # Run image
 # ================================
-FROM ubuntu:focal
-
-# Make sure all system packages are up to date.
-RUN export DEBIAN_FRONTEND=noninteractive DEBCONF_NONINTERACTIVE_SEEN=true && \
-    apt-get -q update && apt-get -q dist-upgrade -y && apt-get -q install -y ca-certificates && \
-    rm -r /var/lib/apt/lists/*
+FROM swift:5.6.1-focal-slim
 
 # Create a vapor user and group with /app as its home directory
 RUN useradd --user-group --create-home --system --skel /dev/null --home-dir /app vapor

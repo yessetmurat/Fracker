@@ -1,6 +1,6 @@
-# Docker Compose file for Vapor
+# Docker Compose file for Production
 
-version: '3.7'
+version: '3.9'
 
 volumes:
   db_data:
@@ -25,7 +25,7 @@ services:
     ports:
       - '443:443'
   db:
-    image: postgres:latest
+    image: postgres:14.2-alpine
     volumes:
       - db_data:/var/lib/postgresql/data
     environment:

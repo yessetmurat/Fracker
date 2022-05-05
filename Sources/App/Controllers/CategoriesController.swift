@@ -33,6 +33,9 @@ struct CategoriesController {
 
     func batchCreate(request: Request) async throws -> HTTPStatus {
         let user = try await request.user
+
+        guard try await user.$categories.query(on: request.db).all().isEmpty else { return .ok }
+
         let requestData = try request.content.decode([CreateRequestBody].self)
         var categories: [Category] = []
 

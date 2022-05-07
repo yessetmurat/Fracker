@@ -7,7 +7,7 @@
 
 import Vapor
 
-struct CategoryResponse: Content {
+struct CategoryResponse: Content, Hashable {
 
     let id: UUID
     let emoji: String

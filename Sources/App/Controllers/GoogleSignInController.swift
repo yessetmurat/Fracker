@@ -29,7 +29,7 @@ struct GoogleSignInController {
         } else {
             let user = User(
                 email: email,
-                appleUserIdentifier: userIdentifier,
+                googleUserIdentifier: userIdentifier,
                 firstName: googleIdentityToken.givenName,
                 lastName: googleIdentityToken.familyName
             )

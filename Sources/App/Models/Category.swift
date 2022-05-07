@@ -35,6 +35,9 @@ final class Category: Model {
     @Parent(key: FieldKeys.user)
     var user: User
 
+    @Children(for: \.$category)
+    var records: [Record]
+
     init() {}
 
     init(id: UUID? = nil, emoji: String, name: String, deletedAt: Date? = nil, user: User.IDValue) {

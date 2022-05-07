@@ -18,4 +18,6 @@ func routes(_ app: Application) throws {
     try CategoriesController().boot(routes: app.routes)
 
     try RecordsContorller().boot(routes: app.routes)
+
+    try AnalyticsController().boot(routes: app.routes)
 }

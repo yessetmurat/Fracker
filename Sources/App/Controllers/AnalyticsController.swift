@@ -61,7 +61,7 @@ struct AnalyticsController {
                 name: category.name,
                 recordsCount: records.count,
                 amount: amount,
-                value: NSDecimalNumber(decimal: currentAmount / amount).floatValue
+                value: NSDecimalNumber(decimal: amount / currentAmount).floatValue
             )
 
             categories.append(response)

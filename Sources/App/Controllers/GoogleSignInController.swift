@@ -27,11 +27,15 @@ struct GoogleSignInController {
         if let user = try await User.query(on: request.db).filter(\.$googleUserIdentifier == userIdentifier).first() {
             return try authResponse(request: request, for: user)
         } else {
+            let name = Name.random.components(separatedBy: " ")
+            let firstName = name.first
+            let lastName = name.last
+
             let user = User(
                 email: email,
                 googleUserIdentifier: userIdentifier,
-                firstName: googleIdentityToken.givenName,
-                lastName: googleIdentityToken.familyName
+                firstName: googleIdentityToken.givenName ?? firstName,
+                lastName: googleIdentityToken.familyName ?? lastName
             )
 
             try await user.create(on: request.db)

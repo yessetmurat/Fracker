@@ -20,7 +20,10 @@ struct UserController {
         guard let password = user.password else { throw Abort(.badRequest, reason: "Password is required") }
 
         let passwordHash = try await request.password.async.hash(password)
-        let persistedUser = User(email: user.email, password: passwordHash)
+        let name = Name.random.components(separatedBy: " ")
+        let firstName = name.first
+        let lastName = name.last
+        let persistedUser = User(email: user.email, password: passwordHash, firstName: firstName, lastName: lastName)
 
         try await persistedUser.create(on: request.db)
 

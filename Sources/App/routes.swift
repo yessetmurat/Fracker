@@ -20,4 +20,6 @@ func routes(_ app: Application) throws {
     try RecordsContorller().boot(routes: app.routes)
 
     try AnalyticsController().boot(routes: app.routes)
+
+    try ProfileController().boot(routes: app.routes)
 }

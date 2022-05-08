@@ -17,16 +17,16 @@ struct AppleSignInController {
         return try await appleAuthorization(
             request: request,
             appleIdentityToken: appleIdentityToken,
-            firstName: requestBody.firstName,
-            lastName: requestBody.lastName
+            givenName: requestBody.firstName,
+            familyName: requestBody.lastName
         )
     }
 
     func appleAuthorization(
         request: Request,
         appleIdentityToken: AppleIdentityToken,
-        firstName: String? = nil,
-        lastName: String? = nil
+        givenName: String? = nil,
+        familyName: String? = nil
     ) async throws -> AuthResponse {
         guard let email = appleIdentityToken.email else {
             throw Abort(.badRequest, reason: "Unable to get email from Apple")
@@ -37,11 +37,15 @@ struct AppleSignInController {
         if let user = try await User.query(on: request.db).filter(\.$appleUserIdentifier == userIdentifier).first() {
             return try authResponse(request: request, for: user)
         } else {
+            let name = Name.random.components(separatedBy: " ")
+            let firstName = name.first
+            let lastName = name.last
+
             let user = User(
                 email: email,
                 appleUserIdentifier: userIdentifier,
-                firstName: firstName,
-                lastName: lastName
+                firstName: givenName ?? firstName,
+                lastName: familyName ?? lastName
             )
 
             try await user.create(on: request.db)

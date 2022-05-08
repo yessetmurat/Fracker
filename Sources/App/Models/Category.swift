@@ -17,6 +17,7 @@ final class Category: Model {
         static var emoji: FieldKey { "emoji" }
         static var name: FieldKey { "name" }
         static var user: FieldKey { "user" }
+        static var createdAt: FieldKey { "created_at" }
         static var deletedAt: FieldKey { "deleted_at" }
     }
 
@@ -29,6 +30,9 @@ final class Category: Model {
     @Field(key: FieldKeys.name)
     var name: String
 
+    @Timestamp(key: FieldKeys.createdAt, on: .create)
+    var createdAt: Date?
+
     @Timestamp(key: FieldKeys.deletedAt, on: .delete)
     var deletedAt: Date?
 
@@ -40,10 +44,18 @@ final class Category: Model {
 
     init() {}
 
-    init(id: UUID? = nil, emoji: String, name: String, deletedAt: Date? = nil, user: User.IDValue) {
+    init(
+        id: UUID? = nil,
+        emoji: String,
+        name: String,
+        createdAt: Date? = nil,
+        deletedAt: Date? = nil,
+        user: User.IDValue
+    ) {
         self.id = id
         self.emoji = emoji
         self.name = name
+        self.createdAt = createdAt
         self.deletedAt = deletedAt
         self.$user.id = user
     }

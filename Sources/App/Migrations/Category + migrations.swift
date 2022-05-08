@@ -28,4 +28,20 @@ extension Category {
                 .delete()
         }
     }
+
+    struct Migration_8_05_2022: AsyncMigration {
+
+        func prepare(on database: Database) async throws {
+            try await database
+                .schema(schema)
+                .field(FieldKeys.createdAt, .datetime)
+                .update()
+        }
+
+        func revert(on database: Database) async throws {
+            try await database
+                .schema(schema)
+                .delete()
+        }
+    }
 }

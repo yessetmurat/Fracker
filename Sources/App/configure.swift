@@ -90,10 +90,7 @@ private func configureDatabase(_ app: Application) {
 }
 
 private func addMigrations(_ app: Application) throws {
-    app.migrations.add(User.Migration())
-    app.migrations.add(Category.Migration())
-    app.migrations.add(Record.Migration())
-    try app.autoMigrate().wait()
+
 }
 
 private func configureUserSecurity(_ app: Application) throws {

@@ -14,26 +14,28 @@ struct RecordsContorller {
 
         let id: UUID?
         let amount: Decimal
+        let createdAt: Date?
         let category: UUID
     }
 
     func create(request: Request) async throws -> HTTPStatus {
         let user = try await request.user
-        let record = try request.content.decode(CreateRequestBody.self)
+        let requestData = try request.content.decode(CreateRequestBody.self)
 
         guard let category = try await
-                request.user.$categories.query(on: request.db).filter(\.$id == record.category).first() else {
+                request.user.$categories.query(on: request.db).filter(\.$id == requestData.category).first() else {
             throw Abort(.badRequest, reason: "Category with specified id wasn't found")
         }
 
-        let persistedRecord = try Record(
-            id: record.id,
-            amount: record.amount,
+        let record = try Record(
+            id: requestData.id,
+            createdAt: requestData.createdAt,
+            amount: requestData.amount,
             category: category.requireID(),
             user: user.requireID()
         )
 
-        try await persistedRecord.save(on: request.db)
+        try await record.save(on: request.db)
         return .created
     }
 
@@ -45,12 +47,14 @@ struct RecordsContorller {
         for object in requestData where try await Record.find(object.id, on: request.db) == nil {
             let category = try await request.user.$categories.query(on: request.db)
                 .filter(\.$id == object.category)
+                .withDeleted()
                 .first()
 
             if let category = category {
                 do {
                     let record = try Record(
                         id: object.id,
+                        createdAt: object.createdAt,
                         amount: object.amount,
                         category: category.requireID(),
                         user: user.requireID()
@@ -79,7 +83,9 @@ struct RecordsContorller {
         let category = try CategoryResponse(
             id: record.category.requireID(),
             emoji: record.category.emoji,
-            name: record.category.name
+            name: record.category.name,
+            createdAt: record.category.createdAt,
+            deletedAt: record.category.deletedAt
         )
 
         return try RecordResponse(
@@ -90,13 +96,16 @@ struct RecordsContorller {
         )
     }
 
+    // TODO: - Fix removed parent
     func all(request: Request) async throws -> Page<RecordResponse> {
         let records = try await request.user.$records.query(on: request.db).with(\.$category).paginate(for: request)
         return try records.map { record in
             let category = try CategoryResponse(
                 id: record.category.requireID(),
                 emoji: record.category.emoji,
-                name: record.category.name
+                name: record.category.name,
+                createdAt: record.category.createdAt,
+                deletedAt: record.category.deletedAt
             )
             return try RecordResponse(
                 id: record.requireID(),

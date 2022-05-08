@@ -26,13 +26,11 @@ struct AnalyticsController {
         let currentRecords = try await user.$records.query(on: request.db)
             .filter(\.$createdAt >= date)
             .filter(\.$createdAt <= currentDate)
-            .with(\.$category)
             .all()
 
         let previousRecords = try await user.$records.query(on: request.db)
             .filter(\.$createdAt >= previousDate)
             .filter(\.$createdAt <= date)
-            .with(\.$category)
             .all()
 
         let currentAmount = currentRecords.map { $0.amount }.reduce(0, +)
@@ -48,7 +46,11 @@ struct AnalyticsController {
 
         var categories: [AnalyticsCategoryResponse] = []
 
-        for category in currentRecords.map({ $0.category }) {
+        for record in currentRecords {
+            guard let category = try await record.$category.query(on: request.db).withDeleted().first() else {
+                continue
+            }
+
             let records = try await category.$records.query(on: request.db)
                 .filter(\.$createdAt >= date)
                 .filter(\.$createdAt <= currentDate)

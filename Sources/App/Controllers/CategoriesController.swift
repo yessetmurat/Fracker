@@ -15,6 +15,8 @@ struct CategoriesController {
         let id: UUID?
         let emoji: String
         let name: String
+        let createdAt: Date?
+        let deletedAt: Date?
     }
 
     func create(request: Request) async throws -> HTTPStatus {
@@ -34,17 +36,24 @@ struct CategoriesController {
     func batchCreate(request: Request) async throws -> HTTPStatus {
         let user = try await request.user
 
-        guard try await user.$categories.query(on: request.db).all().isEmpty else { return .ok }
-
         let requestData = try request.content.decode([CreateRequestBody].self)
         var categories: [Category] = []
 
         for object in requestData where try await Category.find(object.id, on: request.db) == nil {
+            if let category = try await Category.query(on: request.db)
+                .filter(\.$emoji == object.emoji)
+                .filter(\.$name == object.name)
+                .first() {
+                try await category.delete(on: request.db)
+            }
+
             do {
                 let category = try Category(
                     id: object.id,
                     emoji: object.emoji,
                     name: object.name,
+                    createdAt: object.createdAt,
+                    deletedAt: object.deletedAt,
                     user: user.requireID()
                 )
                 categories.append(category)
@@ -62,7 +71,13 @@ struct CategoriesController {
             throw Abort(.badRequest, reason: "Category with specified id wasn't found")
         }
 
-        return try CategoryResponse(id: category.requireID(), emoji: category.emoji, name: category.name)
+        return try CategoryResponse(
+            id: category.requireID(),
+            emoji: category.emoji,
+            name: category.name,
+            createdAt: category.createdAt,
+            deletedAt: category.deletedAt
+        )
     }
 
     func delete(request: Request) async throws -> HTTPStatus {
@@ -75,8 +90,18 @@ struct CategoriesController {
     }
 
     func all(request: Request) async throws -> [CategoryResponse] {
-        return try await request.user.$categories.get(on: request.db).map { category in
-            try CategoryResponse(id: category.requireID(), emoji: category.emoji, name: category.name)
+        return try await request.user.$categories.query(on: request.db)
+            .withDeleted()
+            .sort(\.$createdAt)
+            .all()
+            .map { category in
+                try CategoryResponse(
+                    id: category.requireID(),
+                    emoji: category.emoji,
+                    name: category.name,
+                    createdAt: category.createdAt,
+                    deletedAt: category.deletedAt
+                )
         }
     }
 }

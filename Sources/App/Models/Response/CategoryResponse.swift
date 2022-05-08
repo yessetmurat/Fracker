@@ -12,4 +12,6 @@ struct CategoryResponse: Content, Hashable {
     let id: UUID
     let emoji: String
     let name: String
+    let createdAt: Date?
+    let deletedAt: Date?
 }

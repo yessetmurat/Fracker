@@ -29,7 +29,7 @@ struct AppleSignInController {
         familyName: String? = nil
     ) async throws -> AuthResponse {
         guard let email = appleIdentityToken.email else {
-            throw Abort(.badRequest, reason: "Unable to get email from Apple")
+            throw Abort(.badRequest, reason: Reason.emailError.description(for: request))
         }
 
         let userIdentifier = appleIdentityToken.subject.value
@@ -58,6 +58,20 @@ struct AppleSignInController {
         let payload = try AuthorizationToken(user: user)
         let token = try request.jwt.sign(payload, kid: .private)
         return AuthResponse(token: token)
+    }
+}
+
+extension AppleSignInController {
+
+    enum Reason: ReasonProtocol {
+
+        case emailError
+
+        func description(for request: Request) -> String {
+            switch self {
+            case .emailError: return "Apple.emailError".localized(for: request)
+            }
+        }
     }
 }
 

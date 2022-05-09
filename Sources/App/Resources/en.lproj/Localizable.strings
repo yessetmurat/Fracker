@@ -1,0 +1,17 @@
+/* 
+  Localizable.strings
+  Fracker
+
+  Created by Yesset Murat on 5/8/22.
+  
+*/
+
+"Analytics.week" = "Week";
+"Analytics.month" = "Month";
+"Analytics.year" = "Year";
+"Analytics.dateError" = "Unable to get date for";
+
+"Apple.emailError" = "Unable to get email from Apple";
+"Google.emailError" = "Unable to get email from Google";
+
+"Categories.categoryNotFound" = "Category with specified id wasn't found";

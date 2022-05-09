@@ -24,7 +24,7 @@ struct RecordsContorller {
 
         guard let category = try await
                 request.user.$categories.query(on: request.db).filter(\.$id == requestData.category).first() else {
-            throw Abort(.badRequest, reason: "Category with specified id wasn't found")
+            throw Abort(.badRequest, reason: CategoriesController.Reason.categoryNotFound.description(for: request))
         }
 
         let record = try Record(

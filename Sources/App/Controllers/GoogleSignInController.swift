@@ -19,7 +19,7 @@ struct GoogleSignInController {
 
     func googleAuthorization(request: Request, googleIdentityToken: GoogleIdentityToken) async throws -> AuthResponse {
         guard let email = googleIdentityToken.email else {
-            throw Abort(.badRequest, reason: "Unable to get email from Google")
+            throw Abort(.badRequest, reason: Reason.emailError.description(for: request))
         }
 
         let userIdentifier = googleIdentityToken.subject.value
@@ -48,6 +48,20 @@ struct GoogleSignInController {
         let payload = try AuthorizationToken(user: user)
         let token = try request.jwt.sign(payload, kid: .private)
         return AuthResponse(token: token)
+    }
+}
+
+extension GoogleSignInController {
+
+    enum Reason: ReasonProtocol {
+
+        case emailError
+
+        func description(for request: Request) -> String {
+            switch self {
+            case .emailError: return "Google.emailError".localized(for: request)
+            }
+        }
     }
 }
 

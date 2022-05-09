@@ -68,7 +68,7 @@ struct CategoriesController {
 
     func category(request: Request) async throws -> CategoryResponse {
         guard let category = try await Category.find(request.parameters.get("id"), on: request.db) else {
-            throw Abort(.badRequest, reason: "Category with specified id wasn't found")
+            throw Abort(.badRequest, reason: Reason.categoryNotFound.description(for: request))
         }
 
         return try CategoryResponse(
@@ -82,7 +82,7 @@ struct CategoriesController {
 
     func delete(request: Request) async throws -> HTTPStatus {
         guard let category = try await Category.find(request.parameters.get("id"), on: request.db) else {
-            throw Abort(.badRequest, reason: "Category with specified id wasn't found")
+            throw Abort(.badRequest, reason: Reason.categoryNotFound.description(for: request))
         }
 
         try await category.delete(on: request.db)
@@ -102,6 +102,20 @@ struct CategoriesController {
                     createdAt: category.createdAt,
                     deletedAt: category.deletedAt
                 )
+        }
+    }
+}
+
+extension CategoriesController {
+
+    enum Reason: ReasonProtocol {
+
+        case categoryNotFound
+
+        func description(for request: Request) -> String {
+            switch self {
+            case .categoryNotFound: return "Categories.categoryNotFound".localized(for: request)
+            }
         }
     }
 }

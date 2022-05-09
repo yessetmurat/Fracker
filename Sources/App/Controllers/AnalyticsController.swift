@@ -11,7 +11,18 @@ import Foundation
 
 struct AnalyticsController {
 
-    enum FilterType: String, Decodable { case week, month, year }
+    enum FilterType: String, Decodable {
+
+        case week, month, year
+
+        func title(for request: Request) -> String {
+            switch self {
+            case .week: return "Analytics.week".localized(for: request)
+            case .month: return "Analytics.month".localized(for: request)
+            case .year: return "Analytics.year".localized(for: request)
+            }
+        }
+    }
 
     func analytics(request: Request) async throws -> AnalyticsResponse {
         let user = try await request.user
@@ -20,7 +31,7 @@ struct AnalyticsController {
 
         guard let date = toDate(for: filterType, date: currentDate),
               let previousDate = toDate(for: filterType, date: date) else {
-            throw Abort(.badRequest, reason: "Unable to get date for \(filterType)")
+            throw Abort(.badRequest, reason: Reason.dateError(filterType: filterType).description(for: request))
         }
 
         let currentRecords = try await user.$records.query(on: request.db)
@@ -90,6 +101,21 @@ struct AnalyticsController {
             return nil
         }
         return fromDate
+    }
+}
+
+extension AnalyticsController {
+
+    enum Reason: ReasonProtocol {
+
+        case dateError(filterType: FilterType)
+
+        func description(for request: Request) -> String {
+            switch self {
+            case .dateError(let filterType):
+                return "Analytics.dateError".localized(for: request) + " \'" + filterType.title(for: request) + "\'"
+            }
+        }
     }
 }
 

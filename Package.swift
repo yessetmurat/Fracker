@@ -3,6 +3,7 @@ import PackageDescription
 
 let package = Package(
     name: "Fracker",
+    defaultLocalization: "en",
     platforms: [
        .macOS(.v12)
     ],
@@ -21,6 +22,7 @@ let package = Package(
                 .product(name: "FluentPostgresDriver", package: "fluent-postgres-driver"),
                 .product(name: "JWT", package: "jwt")
             ],
+            resources: [.process("Resources")],
             swiftSettings: [
                 .unsafeFlags(["-cross-module-optimization"], .when(configuration: .release))
             ]

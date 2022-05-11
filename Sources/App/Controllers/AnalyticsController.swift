@@ -13,10 +13,11 @@ struct AnalyticsController {
 
     enum FilterType: String, Decodable {
 
-        case week, month, year
+        case day, week, month, year
 
         func title(for request: Request) -> String {
             switch self {
+            case .day: return "Analytics.day".localized(for: request)
             case .week: return "Analytics.week".localized(for: request)
             case .month: return "Analytics.month".localized(for: request)
             case .year: return "Analytics.year".localized(for: request)
@@ -25,24 +26,32 @@ struct AnalyticsController {
     }
 
     func analytics(request: Request) async throws -> AnalyticsResponse {
-        let user = try await request.user
         let filterType = try request.query.get(FilterType.self, at: "filter")
         let currentDate = Date()
+        let fromDate: Date?
+        let calendarComponent: Calendar.Component
 
-        guard let date = toDate(for: filterType, date: currentDate),
-              let previousDate = toDate(for: filterType, date: date) else {
+        switch filterType {
+        case .day:
+            fromDate = currentDate.startOfDay
+            calendarComponent = .day
+        case .week:
+            fromDate = currentDate.startOfWeek
+            calendarComponent = .weekOfMonth
+        case .month:
+            fromDate = currentDate.startOfMonth
+            calendarComponent = .month
+        case .year:
+            fromDate = currentDate.startOfYear
+            calendarComponent = .year
+        }
+
+        guard let fromDate = fromDate, let previousDate = fromDate.previous(calendarComponent) else {
             throw Abort(.badRequest, reason: Reason.dateError(filterType: filterType).description(for: request))
         }
 
-        let currentRecords = try await user.$records.query(on: request.db)
-            .filter(\.$createdAt >= date)
-            .filter(\.$createdAt <= currentDate)
-            .all()
-
-        let previousRecords = try await user.$records.query(on: request.db)
-            .filter(\.$createdAt >= previousDate)
-            .filter(\.$createdAt <= date)
-            .all()
+        let currentRecords = try await records(for: request, fromDate: fromDate, toDate: currentDate)
+        let previousRecords = try await records(for: request, fromDate: previousDate, toDate: fromDate)
 
         let currentAmount = currentRecords.map { $0.amount }.reduce(0, +)
         let previousAmount = previousRecords.map { $0.amount }.reduce(0, +)
@@ -63,11 +72,10 @@ struct AnalyticsController {
             }
 
             let records = try await category.$records.query(on: request.db)
-                .filter(\.$createdAt >= date)
+                .filter(\.$createdAt >= fromDate)
                 .filter(\.$createdAt <= currentDate)
                 .all()
             let amount = records.map { $0.amount }.reduce(0, +)
-
             let response = try AnalyticsCategoryResponse(
                 id: category.requireID(),
                 emoji: category.emoji,
@@ -88,19 +96,11 @@ struct AnalyticsController {
         )
     }
 
-    private func toDate(for filter: FilterType, date: Date) -> Date? {
-        let calendarComponent: Calendar.Component
-
-        switch filter {
-        case .week: calendarComponent = .weekOfMonth
-        case .month: calendarComponent = .month
-        case .year: calendarComponent = .year
-        }
-
-        guard let fromDate = Calendar.current.date(byAdding: calendarComponent, value: -1, to: date) else {
-            return nil
-        }
-        return fromDate
+    private func records(for request: Request, fromDate: Date, toDate: Date) async throws -> [Record] {
+        return try await request.user.$records.query(on: request.db)
+            .filter(\.$createdAt >= fromDate)
+            .filter(\.$createdAt <= toDate)
+            .all()
     }
 }
 

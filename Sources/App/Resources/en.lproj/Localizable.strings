@@ -6,6 +6,7 @@
   
 */
 
+"Analytics.day" = "Day";
 "Analytics.week" = "Week";
 "Analytics.month" = "Month";
 "Analytics.year" = "Year";

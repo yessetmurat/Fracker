@@ -96,22 +96,30 @@ struct RecordsContorller {
         )
     }
 
-    // TODO: - Fix removed parent
     func all(request: Request) async throws -> Page<RecordResponse> {
-        let records = try await request.user.$records.query(on: request.db).with(\.$category).paginate(for: request)
+        let id = try request.query.get(UUID.self, at: "category")
+        guard let category = try await request.user.$categories.query(on: request.db)
+            .withDeleted()
+            .filter(\.$id == id)
+            .first()
+        else {
+            throw Abort(.notFound)
+        }
+
+        let records = try await category.$records.query(on: request.db).paginate(for: request)
         return try records.map { record in
-            let category = try CategoryResponse(
-                id: record.category.requireID(),
-                emoji: record.category.emoji,
-                name: record.category.name,
-                createdAt: record.category.createdAt,
-                deletedAt: record.category.deletedAt
+            let categoryResponse = try CategoryResponse(
+                id: category.requireID(),
+                emoji: category.emoji,
+                name: category.name,
+                createdAt: category.createdAt,
+                deletedAt: category.deletedAt
             )
             return try RecordResponse(
                 id: record.requireID(),
                 createdAt: record.createdAt,
                 amount: record.amount,
-                category: category
+                category: categoryResponse
             )
         }
     }

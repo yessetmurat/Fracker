@@ -23,6 +23,8 @@ extension Application {
         guard let portString = Environment.get("APPLICATION_PORT") else { return nil }
         return Int(portString)
     }
+
+    var apiKey: String? { Environment.get("API_KEY") }
 }
 
 extension String {

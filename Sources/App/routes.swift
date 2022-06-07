@@ -22,4 +22,6 @@ func routes(_ app: Application) throws {
     try AnalyticsController().boot(routes: app.routes)
 
     try ProfileController().boot(routes: app.routes)
+
+    try WebSocketController().boot(routes: app.routes)
 }
